@@ -39,7 +39,7 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
         <View style={styles.inputsContainer}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: '#c7d2fe', borderWidth: 2, color: '#2563eb' }]}
             placeholder="Email"
             placeholderTextColor="#93c5fd"
             value={email}
@@ -48,7 +48,7 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             autoCapitalize="none"
           />
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: '#c7d2fe', borderWidth: 2, color: '#2563eb' }]}
             placeholder="Password"
             placeholderTextColor="#93c5fd"
             value={password}
