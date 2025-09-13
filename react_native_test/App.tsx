@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
+import CalendarDashboard from './src/screens/CalendarDashboard';
 
 function HomeScreen() {
   return (
@@ -36,9 +37,9 @@ function App() {
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="SignIn" component={SignInScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
-          <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="SignIn" component={SignInScreen} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} />
+            <Stack.Screen name="Home" component={CalendarDashboard} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
