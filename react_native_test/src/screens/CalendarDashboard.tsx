@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Modal, TextInput, Image } from 'react-native';
 
 import LinearGradient from 'react-native-linear-gradient';
@@ -11,17 +13,20 @@ const initialEvents = [
   { title: 'Office Team Meeting', time: '12:00 - 12:30 PM', people: ['D', 'E'], color: '#e0e7ff', day: today.getDate(), month: today.getMonth(), year: today.getFullYear() },
 ];
 
-const goals = [
-  { title: 'Travel Dhaka', color: '#e0e7ff' },
-  { title: 'Shopping', color: '#fee2e2' },
-  { title: 'Bike Riding', color: '#d1fae5' },
-];
-
 function getDaysInMonth(month: number, year: number) {
   return new Date(year, month + 1, 0).getDate();
 }
 
+type RootStackParamList = {
+  SignIn: undefined;
+  SignUp: undefined;
+  Home: undefined;
+  Profile: undefined;
+  Calendar: undefined;
+};
+
 const CalendarDashboard: React.FC = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDay, setSelectedDay] = useState(today.getDate());
@@ -30,7 +35,7 @@ const CalendarDashboard: React.FC = () => {
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [eventTitle, setEventTitle] = useState('');
   const [eventTime, setEventTime] = useState('');
-  const [activeTab, setActiveTab] = useState('calendar');
+  const [activeTab, setActiveTab] = useState('home');
 
   const userName = 'Rukije';
   const hour = new Date().getHours();
@@ -190,14 +195,29 @@ const CalendarDashboard: React.FC = () => {
           </View>
         </View>
 
-        {/* Goals Section */}
+  
+        {/* Modern Reminder/Notification Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{monthNames[currentMonth]} Goal</Text>
-          {goals.map((goal, idx) => (
-            <View key={idx} style={[styles.goalCard, { backgroundColor: goal.color }]}> 
-              <Text style={styles.goalTitle}>{goal.title}</Text>
+          <View style={styles.reminderCard}>
+            <View style={styles.reminderHeaderRow}>
+              <Text style={styles.reminderTitle}>Plan for the next month</Text>
+              <View style={styles.reminderPriority}><Text style={styles.reminderPriorityText}>High Priority</Text></View>
             </View>
-          ))}
+            <Text style={styles.reminderDesc}>Prepare a content plan for September</Text>
+            <View style={styles.reminderInfoRow}>
+              <View style={styles.reminderInfoCol}>
+                <Text style={styles.reminderInfoLabel}>Due date</Text>
+                <Text style={styles.reminderInfoValue}>Aug 25</Text>
+              </View>
+              <View style={styles.reminderInfoCol}>
+                <Text style={styles.reminderInfoLabel}>Assigned to</Text>
+                <View style={styles.reminderAssigneeRow}>
+                  <Image source={require('../assets/icons/user.png')} style={styles.reminderAssigneeAvatar} />
+                  <Text style={styles.reminderAssigneeName}>Tony Ware</Text>
+                </View>
+              </View>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
@@ -213,8 +233,20 @@ const CalendarDashboard: React.FC = () => {
               tab.key === 'add' && styles.pillTabAdd
             ]}
             onPress={() => {
-              if (tab.key === 'add') openModal();
-              else setActiveTab(tab.key);
+              if (tab.key === 'add') {
+                openModal();
+              } else if (tab.key === 'profile') {
+                navigation.navigate('Profile');
+                setActiveTab(tab.key);
+              } else if (tab.key === 'calendar') {
+                navigation.navigate('Calendar');
+                setActiveTab(tab.key);
+              } else if (tab.key === 'home') {
+                navigation.navigate('Home');
+                setActiveTab(tab.key);
+              } else {
+                setActiveTab(tab.key);
+              }
             }}
             activeOpacity={0.8}
           >
@@ -386,16 +418,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e7ff',
   },
-  goalCard: {
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 10,
-    shadowColor: '#6366f1',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  goalTitle: { fontWeight: 'bold', fontSize: 16, color: '#2563eb' },
   navbar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -563,6 +585,113 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginLeft: 8,
+  },
+  createHeader: {
+    marginBottom: 8,
+  },
+  createDesc: {
+    color: '#64748b',
+    fontSize: 15,
+    marginBottom: 8,
+  },
+  createFormRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  createInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#e0e7ff',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 16,
+    color: '#2563eb',
+    backgroundColor: '#f7fafc',
+  },
+  createBtn: {
+    backgroundColor: '#6366f1',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  createBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  reminderCard: {
+    backgroundColor: '#2563eb', // main blue for background
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 16,
+    shadowColor: '#6366f1',
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  reminderHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  reminderTitle: {
+    color: '#fff', // white text for contrast
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  reminderPriority: {
+    backgroundColor: '#f87171',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  reminderPriorityText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  reminderDesc: {
+    color: '#e0e7ff', // light blue for secondary text
+    fontSize: 15,
+    marginBottom: 12,
+  },
+  reminderInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  reminderInfoCol: {
+    flexDirection: 'column',
+  },
+  reminderInfoLabel: {
+    color: '#e0e7ff', // light blue for label
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  reminderInfoValue: {
+    color: '#fff', // white for value
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  reminderAssigneeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  reminderAssigneeAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 6,
+  },
+  reminderAssigneeName: {
+    color: '#fff', // white for name
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 });
 
