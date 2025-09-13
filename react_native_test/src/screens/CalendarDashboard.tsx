@@ -1,3 +1,39 @@
+type EventType = { time?: string };
+function toAmPmLabel(start: string, end: string): string {
+  // start/end: 'HH:MM'
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  const ampm = eh >= 12 ? 'PM' : 'AM';
+  // Remove AM/PM from each time, add only at the end
+  const fmt = (h: number, m: number) => `${h}:${m.toString().padStart(2, '0')}`;
+  return `${fmt(sh, sm)} - ${fmt(eh, em)} ${ampm}`;
+}
+
+type TimeSlot = { slot: string, label: string, disabled: boolean };
+function getAvailableTimeSlots(dayEvents: EventType[]): TimeSlot[] {
+  const slots: TimeSlot[] = [];
+  // Build slots from 10:30 to 16:00 (4:00 PM)
+  const slotTimes = [
+    ['10:30', '11:00'],
+    ['11:00', '11:30'],
+    ['11:30', '12:00'],
+    ['12:00', '12:30'],
+    ['12:30', '13:00'],
+    ['13:00', '13:30'],
+    ['13:30', '14:00'],
+    ['14:00', '14:30'],
+    ['14:30', '15:00'],
+    ['15:00', '15:30'],
+  ];
+  for (const [start, end] of slotTimes) {
+    const slot = `${start} - ${end}`;
+  const label = toAmPmLabel(start, end);
+    const disabled = dayEvents.some(ev => ev.time === slot);
+    slots.push({ slot, label, disabled });
+  }
+  return slots;
+}
+
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -273,7 +309,10 @@ const CalendarDashboard: React.FC = () => {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{editIndex !== null ? 'Edit Event' : 'Create Event'}</Text>
+            <View style={styles.modalHeaderRow}>
+              <Image source={require('../assets/icons/schedule.png')} style={styles.modalHeaderIcon} />
+              <Text style={styles.modalTitle}>{editIndex !== null ? 'Edit Event' : 'Create Event'}</Text>
+            </View>
             <TextInput
               style={styles.modalInput}
               placeholder="Event Title"
@@ -281,13 +320,35 @@ const CalendarDashboard: React.FC = () => {
               onChangeText={setEventTitle}
               placeholderTextColor="#93c5fd"
             />
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Event Time"
-              value={eventTime}
-              onChangeText={setEventTime}
-              placeholderTextColor="#93c5fd"
-            />
+            <Text style={styles.modalLabel}>Available Time</Text>
+            <View style={styles.timeSlotGrid}>
+              {(() => {
+                const slots = getAvailableTimeSlots(dayEvents);
+                const rows = [];
+                for (let i = 0; i < slots.length; i += 2) {
+                  rows.push(
+                    <View key={i} style={styles.timeSlotRow}>
+                      {[0, 1].map(j => {
+                        const slotObj = slots[i + j];
+                        if (!slotObj) return <View key={j} style={{ flex: 1 }} />;
+                        return (
+                          <TouchableOpacity
+                            key={j}
+                            style={[styles.timeSlotPill, eventTime === slotObj.slot && styles.timeSlotPillSelected, slotObj.disabled && { opacity: 0.4 }]}
+                            onPress={() => !slotObj.disabled && setEventTime(slotObj.slot)}
+                            activeOpacity={slotObj.disabled ? 1 : 0.8}
+                            disabled={slotObj.disabled}
+                          >
+                            <Text style={[styles.timeSlotText, eventTime === slotObj.slot && styles.timeSlotTextSelected]}>{slotObj.label}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  );
+                }
+                return rows;
+              })()}
+            </View>
             <View style={styles.modalActionsRow}>
               <TouchableOpacity
                 style={[styles.modalBtn, { backgroundColor: '#6366f1', marginBottom: 0 }]}
@@ -304,6 +365,7 @@ const CalendarDashboard: React.FC = () => {
                 <Text style={[styles.modalBtnText, { color: '#6366f1' }]}>Cancel</Text>
               </TouchableOpacity>
             </View>
+
           </View>
         </View>
       </Modal>
@@ -312,6 +374,60 @@ const CalendarDashboard: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 10,
+    justifyContent: 'center',
+  },
+  modalHeaderIcon: {
+    width: 32,
+    height: 32,
+    marginRight: 8,
+    tintColor: '#6366f1',
+  },
+  modalLabel: {
+    fontSize: 15,
+    color: '#2563eb',
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 4,
+    marginLeft: 2,
+  },
+  timeSlotRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 8,
+    width: '100%',
+    maxWidth: 320,
+  },
+  timeSlotGrid: {
+    marginBottom: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeSlotPill: {
+    backgroundColor: '#e0e7ff',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    marginVertical: 2,
+    marginHorizontal: 8,
+    minWidth: 110,
+    alignItems: 'center',
+  },
+  timeSlotPillSelected: {
+    backgroundColor: '#6366f1',
+  },
+  timeSlotText: {
+    color: '#2563eb',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  timeSlotTextSelected: {
+    color: '#fff',
+  },
   dayNumberWrapper: {
     flex: 1,
     alignItems: 'center',
