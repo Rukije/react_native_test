@@ -1,97 +1,120 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native Calendar App
 
-# Getting Started
+This is a [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`]
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+---
 
-## Step 1: Start Metro
+## Features
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **Modern Calendar App UI** with Home (Dashboard), Calendar View, and Profile screens
+- **Reusable Components:** Custom `Navbar` (pill-shaped bottom navigation) and `Header` (centered title) used across all screens
+- **Event Management:** View and manage events for each day; events are stored in AsyncStorage for persistence
+- **Redux Integration:** Event state is managed with Redux in the Calendar View for predictable updates
+- **Biometric Authentication:** Face ID/Fingerprint login support (if available on your device)
+- **Navigation:** React Navigation with clear tab-to-screen mapping and tab highlighting
+- **Responsive Design:** Clean, modern UI with rounded elements and smooth navigation
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+---
+
+## What You Can Do With This App
+
+- **Sign in** using email/password or biometric authentication (Face ID/Fingerprint)
+- **Navigate** between Home (Dashboard), Calendar View, and Profile screens using the bottom navbar
+- **View a monthly calendar** and select any day to see its events in a timeline
+- **Events** are displayed per day and persist between app launches
+- **Profile screen** to view or edit your user information
+- **Consistent, modern UI** with reusable components
+
+---
+
+## Getting Started
+
+### 1. Install dependencies
 
 ```sh
-# Using npm
+npm install
+```
+
+### 2. Start Metro
+
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
+### 3. Run the app
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+#### Android
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+#### iOS
 
 ```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+---
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## Usage
 
-## Step 3: Modify your app
+- **Sign in** to access your dashboard.
+- Use the **navbar** to switch between Home, Calendar, and Profile.
+- **View and manage events** for any day in the calendar.
+- **Biometric login** is available if your device supports it.
 
-Now that you have successfully run the app, let's make changes!
+---
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## Logic Overview
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+- **State Management:**  
+  Events are managed with Redux in the Calendar View for reliable updates and sharing state between components.
+- **Persistence:**  
+  Events are saved in AsyncStorage, so they remain after closing the app.
+- **Navigation:**  
+  React Navigation handles screen transitions and tab highlighting.
+- **Authentication:**  
+  Biometric login is supported for quick and secure access.
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+---
+## Software Requirements
 
-## Congratulations! :tada:
+To run this application, you must have the following software installed:
 
-You've successfully run and modified your React Native App. :partying_face:
+| Software                | Version (recommended) |
+|-------------------------|----------------------|
+| Node.js                 | 20.x                 |
+| npm                     | 10.x                 |
+| React Native CLI        | 0.81.x               |
+| Java JDK (for Android)  | 17                   |
+| Android Studio          | Latest stable        |
+| Xcode (for iOS)         | 14.x or newer        |
+| CocoaPods (for iOS)     | 1.12.x or newer      |
+| Git                     | 2.30.x or newer      |
 
-### Now what?
+### Key npm dependencies
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+- `react-native`: **0.81.4**
+- `react`: **19.1.1**
+- `react-native-biometrics`: **3.0.1**
+- `react-native-vector-icons`: **10.3.0**
 
-# Troubleshooting
+> Make sure to also install other dependencies used in this project, such as `@reduxjs/toolkit`, `react-redux`, and `@react-navigation/native`, with compatible versions.
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## Screenshots
 
-# Learn More
+<p align="center">
+  <img src="src/assets/appSc/13.png" alt="Screenshot 13" width="140"/>
+  <img src="src/assets/appSc/1.png" alt="Screenshot 1" width="140"/>
+  <img src="src/assets/appSc/4.png" alt="Screenshot 4" width="140"/>
+  <img src="src/assets/appSc/8.png" alt="Screenshot 8" width="140"/>
+  <img src="src/assets/appSc/10.png" alt="Screenshot 10" width="140"/>
+</p>
 
-To learn more about React Native, take a look at the following resources:
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+
