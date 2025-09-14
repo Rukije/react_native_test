@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "542403963279",
+    "project_id": "react-native-test-833b4",
+    "storage_bucket": "react-native-test-833b4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:542403963279:android:fe6c42070e9382c29e83fa",
+        "android_client_info": {
+          "package_name": "com.react_native_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAc8Qr8ogkiwmITs6ELvSkjp-9QsFK8EKo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
