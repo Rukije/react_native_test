@@ -27,8 +27,11 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (validate()) {
       try {
         await auth().signInWithEmailAndPassword(email, password);
+        const currentUser = auth().currentUser;
+        const userName = currentUser?.displayName || '';
         await AsyncStorage.setItem('biometricUser', email);
-        navigation.navigate('Home');
+        await AsyncStorage.setItem('userName', userName); // Save name for later use
+        navigation.navigate('Home', { userName }); // Pass name to Home screen
       } catch (e: any) {
         if (e.code === 'auth/user-not-found') {
           setError('No user found with this email.');
@@ -64,7 +67,9 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     });
 
     if (success) {
-      navigation.navigate('Home');
+      // Get user name from AsyncStorage and pass to Home
+      const userName = await AsyncStorage.getItem('userName');
+      navigation.navigate('Home', { userName });
     } else {
       setError('Biometric authentication failed or cancelled.');
     }

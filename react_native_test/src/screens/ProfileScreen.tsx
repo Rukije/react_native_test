@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Modal } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
   SignIn: undefined;
@@ -22,14 +23,28 @@ const tabData = [
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState('profile');
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const name = await AsyncStorage.getItem('userName');
+      const email = await AsyncStorage.getItem('biometricUser');
+      setUserName(name || '');
+      setUserEmail(email || '');
+    };
+    getUserInfo();
+  }, []);
+
   const user = {
-    name: 'Rukije Morina',
-    description: 'Buyer',
+    name: userName || 'User',
     avatar: require('../assets/icons/user.png'),
+    email: userEmail || '',
   };
 
   const menuOptions = [
-    { icon: require('../assets/icons/edit.png'), label: 'Edit Profile' },
+    { icon: require('../assets/icons/edit.png'), label: 'Info', action: () => setModalVisible(true) },
     { icon: require('../assets/icons/bell.png'), label: 'Notification' },
     { icon: require('../assets/icons/location.png'), label: 'Shipping Address' },
     { icon: require('../assets/icons/lock.png'), label: 'Change Password' },
@@ -38,20 +53,23 @@ const ProfileScreen: React.FC = () => {
   return (
     <View style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileSection}>
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
           <View style={styles.avatarModernWrapper}>
             <LinearGradient colors={["#2563eb", "#6366f1"]} style={styles.avatarModernBg}>
-              <Text style={styles.avatarInitials}>{user.name.split(' ').map(n => n[0]).join('')}</Text>
+              <Text style={styles.avatarInitials}>
+                {user.name.split(' ').map(n => n[0]).join('')}
+              </Text>
             </LinearGradient>
           </View>
           <Text style={styles.name}>{user.name}</Text>
-          <Text style={styles.userSubtitle}>Passionate about great deals and new experiences.</Text>
-          <Text style={styles.description}>{user.description}</Text>
+          <Text style={styles.userSubtitle}>{user.email}</Text>
         </View>
 
+        {/* Menu Section */}
         <View style={styles.menuSection}>
           {menuOptions.map((option, idx) => (
-            <TouchableOpacity key={idx} style={styles.menuRow}>
+            <TouchableOpacity key={idx} style={styles.menuRow} onPress={option.action}>
               <View style={styles.menuIconWrapper}>
                 <Image source={option.icon} style={styles.menuIcon} />
               </View>
@@ -67,6 +85,27 @@ const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
         <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <LinearGradient colors={["#2563eb", "#60a5fa"]} style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Your Info</Text>
+            </LinearGradient>
+            <View style={styles.modalBody}>
+              <Text style={styles.modalLabel}>Name:</Text>
+              <Text style={styles.modalValue}>{user.name}</Text>
+              <Text style={styles.modalLabel}>Email:</Text>
+              <Text style={styles.modalValue}>{user.email}</Text>
+              <TouchableOpacity style={styles.closeModalBtn} onPress={() => setModalVisible(false)}>
+                <Text style={styles.closeModalText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Modern pill-shaped navbar at bottom */}
       <View style={styles.pillNavbarBottom}>
         <View style={styles.pillNavbar}>
@@ -128,18 +167,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     paddingBottom: 8,
   },
-  profileSection: {
+  profileCard: {
     alignItems: 'center',
     marginTop: 32,
     marginBottom: 18,
     paddingHorizontal: 16,
-    backgroundColor: 'rgba(236,242,255,0.7)',
-    borderRadius: 24,
-    paddingVertical: 12,
-    shadowColor: '#6366f1',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 28,
+    paddingVertical: 24,
+    shadowColor: '#2563eb',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#e0e7ff',
   },
   avatarModernWrapper: {
     alignItems: 'center',
@@ -171,7 +212,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#2563eb',
-    marginBottom: 0,
+    marginBottom: 2,
     letterSpacing: 1.5,
     textAlign: 'center',
     textShadowColor: '#e0e7ff',
@@ -274,17 +315,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 1,
   },
-  profileCard: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 32,
-    marginHorizontal: 24,
-    alignItems: 'center',
-    shadowColor: '#6366f1',
-    shadowOpacity: 0.10,
-    shadowRadius: 16,
-    elevation: 8,
-  },
   avatar: {
     width: 80,
     height: 80,
@@ -295,7 +325,7 @@ const styles = StyleSheet.create({
   },
   pillNavbar: {
     flexDirection: 'row',
-    backgroundColor: '#fff', // white background
+    backgroundColor: '#fff', 
     borderRadius: 32,
     padding: 8,
     marginHorizontal: 16,
@@ -361,6 +391,62 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
     flexGrow: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 22,
+    width: '80%',
+    elevation: 12,
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    width: '100%',
+    paddingVertical: 18,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+    letterSpacing: 1,
+  },
+  modalBody: {
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  modalLabel: {
+    fontSize: 16,
+    color: '#6366f1',
+    marginTop: 8,
+    fontWeight: 'bold',
+  },
+  modalValue: {
+    fontSize: 16,
+    color: '#222',
+    marginBottom: 4,
+  },
+  closeModalBtn: {
+    marginTop: 22,
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+  },
+  closeModalText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

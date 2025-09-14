@@ -34,12 +34,13 @@ function getAvailableTimeSlots(dayEvents: EventType[]): TimeSlot[] {
   return slots;
 }
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Modal, TextInput, Image } from 'react-native';
 
 import LinearGradient from 'react-native-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const today = new Date();
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -72,8 +73,16 @@ const CalendarDashboard: React.FC = () => {
   const [eventTitle, setEventTitle] = useState('');
   const [eventTime, setEventTime] = useState('');
   const [activeTab, setActiveTab] = useState('home');
+  const [userName, setUserName] = useState('');
 
-  const userName = 'Rukije';
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const name = await AsyncStorage.getItem('userName');
+      setUserName(name || '');
+    };
+    fetchUserName();
+  }, []);
+
   const hour = new Date().getHours();
   let greeting = 'Good Evening';
   if (hour >= 5 && hour < 12) greeting = 'Good Morning';
