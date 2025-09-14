@@ -103,16 +103,18 @@ To run this application, you must have the following software installed:
 > Make sure to also install other dependencies used in this project, such as `@reduxjs/toolkit`, `react-redux`, and `@react-navigation/native`, with compatible versions.
 
 ## Screenshots
-Here are just some screenshots of the screens
+
 <p align="center">
-  <img src="src/assets/appSc/12.png" alt="Screenshot 12" width="140"/>
-  <img src="src/assets/appSc/15.png" alt="Screenshot 15" width="140"/>
-    <img src="src/assets/appSc/16.png" alt="Screenshot 13" width="140"/>
-  <img src="src/assets/appSc/1.png" alt="Screenshot 1" width="140"/>
-  <img src="src/assets/appSc/4.png" alt="Screenshot 4" width="140"/>
-  <img src="src/assets/appSc/8.png" alt="Screenshot 8" width="140"/>
-  <img src="src/assets/appSc/10.png" alt="Screenshot 10" width="140"/>
-    <img src="src/assets/appSc/11.png" alt="Screenshot 11" width="140"/>
+
+
+  <img src="./react_native_test/src/assets/appSc/12.png" alt="Screenshot 12" width="140"/>
+  <img src="./react_native_test/src/assets/appSc/15.png" alt="Screenshot 15" width="140"/>
+    <img src="./react_native_test/src/assets/appSc/16.png" alt="Screenshot 13" width="140"/>
+  <img src="./react_native_test/src/assets/appSc/1.png" alt="Screenshot 1" width="140"/>
+  <img src="./react_native_test/src/assets/appSc/4.png" alt="Screenshot 4" width="140"/>
+  <img src="./react_native_test/src/assets/appSc/8.png" alt="Screenshot 8" width="140"/>
+  <img src="./react_native_test/src/assets/appSc//10.png" alt="Screenshot 10" width="140"/>
+    <img src="./react_native_test/src/assets/appSc/11.png" alt="Screenshot 11" width="140"/>
 
 </p>
 
