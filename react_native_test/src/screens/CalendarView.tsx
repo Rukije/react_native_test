@@ -4,7 +4,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Navbar from '../components/Navbar'; // <-- Add this import
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../store';
+import { setEvents } from '../store/eventsSlice';
+import Navbar from '../components/Navbar';
 
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -21,18 +24,19 @@ const CalendarView: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(today.getDate());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [events, setEvents] = useState<any[]>([]);
+  const events = useSelector((state: RootState) => state.events);
+  const dispatch = useDispatch();
 
   // Fetch events from AsyncStorage
   useEffect(() => {
     const fetchEvents = async () => {
       const storedEvents = await AsyncStorage.getItem('userEvents');
       if (storedEvents) {
-        setEvents(JSON.parse(storedEvents));
+        dispatch(setEvents(JSON.parse(storedEvents)));
       }
     };
     fetchEvents();
-  }, []);
+  }, [dispatch]);
 
   // Get number of days in the current month
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();

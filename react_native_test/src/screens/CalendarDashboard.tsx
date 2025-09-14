@@ -324,7 +324,7 @@ const CalendarDashboard: React.FC = () => {
                 <Text style={styles.reminderInfoLabel}>Assigned to</Text>
                 <View style={styles.reminderAssigneeRow}>
                   <Image source={require('../assets/icons/user.png')} style={styles.reminderAssigneeAvatar} />
-                  <Text style={styles.reminderAssigneeName}>Tony Ware</Text>
+                  <Text style={styles.reminderAssigneeName}>Rukije Morina</Text>
                 </View>
               </View>
             </View>
@@ -903,12 +903,12 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   reminderInfoLabel: {
-    color: '#e0e7ff', // light blue for label
+    color: '#e0e7ff', 
     fontSize: 13,
     marginBottom: 2,
   },
   reminderInfoValue: {
-    color: '#fff', // white for value
+    color: '#fff', 
     fontWeight: 'bold',
     fontSize: 15,
   },

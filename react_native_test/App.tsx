@@ -8,6 +8,8 @@ import SignUpScreen from './src/screens/SignUpScreen';
 import CalendarDashboard from './src/screens/CalendarDashboard';
 import CalendarView from './src/screens/CalendarView';
 import ProfileScreen from './src/screens/ProfileScreen';
+import { Provider } from 'react-redux';
+import { store } from './src/store';
 
 function HomeScreen() {
   return (
@@ -32,24 +34,24 @@ function HomeView() {
 
 const Stack = createStackNavigator();
 
-function App() {
+export default function App() {
   const isDarkMode = useColorScheme() === 'dark';
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NavigationContainer>
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SignIn" component={SignInScreen} />
-      <Stack.Screen name="SignUp" component={SignUpScreen} />
-      <Stack.Screen name="Home" component={CalendarDashboard} />
-      <Stack.Screen name="Calendar" component={CalendarView} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-    </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <Provider store={store}>
+      <SafeAreaProvider>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="SignIn" component={SignInScreen} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} />
+            <Stack.Screen name="Home" component={CalendarDashboard} />
+            <Stack.Screen name="Calendar" component={CalendarView} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </Provider>
   );
 }
 
 const styles = StyleSheet.create({});
-
-export default App;
