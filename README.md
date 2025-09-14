@@ -1,6 +1,6 @@
 # React Native Calendar App
 
-This is a [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`]
+This is a [**React Native**] (Calendar App) project, bootstrapped using [`@react-native-community/cli`]
 
 ---
 
@@ -18,7 +18,7 @@ This is a [**React Native**](https://reactnative.dev) project, bootstrapped usin
 
 ## What You Can Do With This App
 
-- **Sign in** using email/password or biometric authentication (Face ID/Fingerprint)
+- **Sign in** using email/password or biometric authentication (Face ID)
 - **Navigate** between Home (Dashboard), Calendar View, and Profile screens using the bottom navbar
 - **View a monthly calendar** and select any day to see its events in a timeline
 - **Events** are displayed per day and persist between app launches
@@ -46,16 +46,9 @@ npm start
 #### Android
 
 ```sh
-npm run android
+npx react-native run-android
 ```
 
-#### iOS
-
-```sh
-npm run ios
-```
-
----
 
 ## Usage
 
@@ -117,10 +110,4 @@ To run this application, you must have the following software installed:
     <img src="./react_native_test/src/assets/appSc/11.png" alt="Screenshot 11" width="140"/>
 
 </p>
-
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
-
 
