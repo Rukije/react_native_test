@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import auth from '@react-native-firebase/auth';
 
 const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -20,9 +21,22 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     return true;
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (validate()) {
-      navigation.navigate('Home');
+      try {
+        await auth().signInWithEmailAndPassword(email, password);
+        navigation.navigate('Home');
+      } catch (e: any) {
+        if (e.code === 'auth/user-not-found') {
+          setError('No user found with this email.');
+        } else if (e.code === 'auth/wrong-password') {
+          setError('Incorrect password.');
+        } else if (e.code === 'auth/invalid-email') {
+          setError('Invalid email address.');
+        } else {
+          setError('This account does not exist. Please try again.');
+        }
+      }
     }
   };
 
