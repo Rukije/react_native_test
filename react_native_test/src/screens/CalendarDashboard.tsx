@@ -1,4 +1,31 @@
-type EventType = { time?: string };
+import React, { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Modal, TextInput, Image } from 'react-native';
+
+import LinearGradient from 'react-native-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const today = new Date();
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+type EventType = {
+  title: string;
+  time: string;
+  people: string[];
+  color: string;
+  day: number;
+  month: number;
+  year: number;
+  createdBy?: string;
+  priority?: 'Top Priority' | 'Urgent' | 'Critical Event' | 'None';
+};
+
+const initialEvents: EventType[] = [
+  { title: 'Design Meeting', time: '10:00 - 11:30 AM', people: ['A', 'B', 'C'], color: '#fce7f3', day: today.getDate(), month: today.getMonth(), year: today.getFullYear() },
+  { title: 'Office Team Meeting', time: '12:00 - 12:30 PM', people: ['D', 'E'], color: '#e0e7ff', day: today.getDate(), month: today.getMonth(), year: today.getFullYear() },
+];
+
 function toAmPmLabel(start: string, end: string): string {
   // start/end: 'HH:MM'
   const [sh, sm] = start.split(":").map(Number);
@@ -34,26 +61,6 @@ function getAvailableTimeSlots(dayEvents: EventType[]): TimeSlot[] {
   return slots;
 }
 
-import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Modal, TextInput, Image } from 'react-native';
-
-import LinearGradient from 'react-native-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const today = new Date();
-const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-const initialEvents = [
-  { title: 'Design Meeting', time: '10:00 - 11:30 AM', people: ['A', 'B', 'C'], color: '#fce7f3', day: today.getDate(), month: today.getMonth(), year: today.getFullYear() },
-  { title: 'Office Team Meeting', time: '12:00 - 12:30 PM', people: ['D', 'E'], color: '#e0e7ff', day: today.getDate(), month: today.getMonth(), year: today.getFullYear() },
-];
-
-function getDaysInMonth(month: number, year: number) {
-  return new Date(year, month + 1, 0).getDate();
-}
-
 type RootStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
@@ -67,21 +74,37 @@ const CalendarDashboard: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDay, setSelectedDay] = useState(today.getDate());
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState<EventType[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [eventTitle, setEventTitle] = useState('');
   const [eventTime, setEventTime] = useState('');
+  const [eventPriority, setEventPriority] = useState<'Top Priority' | 'Urgent' | 'Critical Event' | 'None'>('None');
   const [activeTab, setActiveTab] = useState('home');
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
+    // Load user name from AsyncStorage
     const fetchUserName = async () => {
       const name = await AsyncStorage.getItem('userName');
       setUserName(name || '');
     };
     fetchUserName();
+
+    // Load events from AsyncStorage
+    const fetchEvents = async () => {
+      const storedEvents = await AsyncStorage.getItem('userEvents');
+      if (storedEvents) {
+        setEvents(JSON.parse(storedEvents));
+      }
+    };
+    fetchEvents();
   }, []);
+
+  // Save events to AsyncStorage whenever they change
+  useEffect(() => {
+    AsyncStorage.setItem('userEvents', JSON.stringify(events));
+  }, [events]);
 
   const hour = new Date().getHours();
   let greeting = 'Good Evening';
@@ -91,28 +114,43 @@ const CalendarDashboard: React.FC = () => {
   const daysInMonth = getDaysInMonth(currentMonth, currentYear);
   const firstDayOfWeek = new Date(currentYear, currentMonth, 1).getDay();
 
-  // Filter events for selected day
-  const dayEvents = events.filter(e => e.day === selectedDay && e.month === currentMonth && e.year === currentYear);
+  // Filter events for selected day and current user
+  const dayEvents = events.filter(
+    e =>
+      e.day === selectedDay &&
+      e.month === currentMonth &&
+      e.year === currentYear &&
+      e.createdBy === userName
+  );
 
   const openModal = (idx?: number) => {
     if (typeof idx === 'number') {
       setEditIndex(idx);
       setEventTitle(events[idx].title);
       setEventTime(events[idx].time);
-
+      setEventPriority(events[idx].priority || 'None');
     } else {
       setEditIndex(null);
       setEventTitle('');
       setEventTime('');
-
+      setEventPriority('None');
     }
     setModalVisible(true);
   };
 
   const saveEvent = () => {
     if (eventTitle.trim() === '' || eventTime.trim() === '') return;
+
+    const userDayEvents = events.filter(
+      e =>
+        e.day === selectedDay &&
+        e.month === currentMonth &&
+        e.year === currentYear &&
+        e.createdBy === userName
+    );
+    const color = userDayEvents.length % 2 === 0 ? '#fce7f3' : '#e0e7ff';
+
     if (editIndex !== null) {
-      // Edit existing event
       const updated = [...events];
       updated[editIndex] = {
         ...updated[editIndex],
@@ -121,25 +159,29 @@ const CalendarDashboard: React.FC = () => {
         day: selectedDay,
         month: currentMonth,
         year: currentYear,
+        createdBy: userName,
+        color,
+        priority: eventPriority,
       };
       setEvents(updated);
     } else {
-      // Add new event for selected date
       setEvents([...events, {
         title: eventTitle,
         time: eventTime,
         people: [],
-        color: '#e0e7ff',
+        color,
         day: selectedDay,
         month: currentMonth,
         year: currentYear,
+        createdBy: userName,
+        priority: eventPriority,
       }]);
     }
     setModalVisible(false);
     setEventTitle('');
     setEventTime('');
     setEditIndex(null);
-
+    setEventPriority('None');
   };
 
   // Modern navbar tab data
@@ -225,17 +267,41 @@ const CalendarDashboard: React.FC = () => {
           </View>
           <View style={styles.cardsRow}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
-              {dayEvents.map((event, idx) => (
-                <TouchableOpacity key={idx} style={[styles.eventCard, { backgroundColor: event.color }]} onPress={() => openModal(events.indexOf(event))}>
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventTime}>{event.time}</Text>
-                  <View style={styles.peopleRow}>
-                    {event.people.map((p, i) => (
-                      <View key={i} style={styles.personCircle}><Text>{p}</Text></View>
-                    ))}
-                  </View>
-                </TouchableOpacity>
-              ))}
+              {dayEvents.length === 0 ? (
+                <View style={[styles.eventCard, { backgroundColor: '#e0e7ff', justifyContent: 'center', alignItems: 'center', minWidth: 180 }]}>
+                  <Text style={{ color: '#6366f1', fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>
+                    No events on this day.
+                  </Text>
+                </View>
+              ) : (
+                dayEvents.map((event, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={[styles.eventCard, { backgroundColor: event.color }]}
+                    onPress={() => openModal(events.indexOf(event))}
+                  >
+                    <Text style={styles.eventTitle}>{event.title}</Text>
+                    <Text style={styles.eventTime}>{event.time}</Text>
+                    <View style={styles.peopleRow}>
+                      {event.people.map((p, i) => (
+                        <View key={i} style={styles.personCircle}><Text>{p}</Text></View>
+                      ))}
+                    </View>
+                    {event.priority && event.priority !== 'None' && (
+                      <View style={{
+                        marginTop: 6,
+                        alignSelf: 'flex-start',
+                        backgroundColor: PRIORITY_OPTIONS.find(opt => opt.label === event.priority)?.color || '#6366f1',
+                        borderRadius: 8,
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
+                      }}>
+                        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>{event.priority}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                ))
+            )}
             </ScrollView>
           </View>
         </View>
@@ -358,6 +424,39 @@ const CalendarDashboard: React.FC = () => {
                 return rows;
               })()}
             </View>
+            <View style={{ marginVertical: 12 }}>
+              <Text style={styles.modalLabel}>Priority</Text>
+              <View style={{
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 6,
+    gap: 8,
+  }}>
+    {PRIORITY_OPTIONS.map((option, idx) => (
+      <TouchableOpacity
+        key={option.label}
+        style={{
+          backgroundColor: eventPriority === option.label ? option.color : '#e0e7ff',
+          borderRadius: 16,
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          margin: 6,
+          minWidth: 130,
+          alignItems: 'center',
+          marginBottom: idx % 2 === 0 ? 8 : 0,
+        }}
+        onPress={() => setEventPriority(option.label as any)}
+      >
+        <Text style={{
+          color: eventPriority === option.label ? '#fff' : '#2563eb',
+          fontWeight: 'bold',
+          fontSize: 14,
+        }}>{option.label}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+            </View>
             <View style={styles.modalActionsRow}>
               <TouchableOpacity
                 style={[styles.modalBtn, { backgroundColor: '#6366f1', marginBottom: 0 }]}
@@ -381,6 +480,17 @@ const CalendarDashboard: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+function getDaysInMonth(month: number, year: number): number {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+const PRIORITY_OPTIONS = [
+  { label: 'Top Priority', color: '#ef4444' },         // Red
+  { label: 'Urgent', color: '#f59e42' },               // Orange
+  { label: 'Critical Event', color: '#6366f1' },       // Indigo
+  { label: 'None', color: '#e0e7ff' },                 // Light violet
+];
 
 const styles = StyleSheet.create({
   modalHeaderRow: {

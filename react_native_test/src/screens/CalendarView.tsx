@@ -1,60 +1,13 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const today = new Date();
-
-const events = [
-  {
-    title: 'Morning Yoga',
-    time: '9 AM - 10 AM · 1 hr',
-    type: 'Personal',
-    color: '#f3f4f6',
-    borderColor: '#d1d5db',
-    textColor: '#64748b',
-    labelColor: '#a3a3a3',
-    people: [],
-    hour: 8,
-  },
-  {
-    title: 'Daily sync',
-    time: '9 AM - 10 AM · 1 hr',
-    type: 'Team meeting',
-    color: '#e0e7ff',
-    borderColor: '#6366f1',
-    textColor: '#2563eb',
-    labelColor: '#6366f1',
-    people: ['../assets/icons/user.png', '../assets/icons/user.png', '../assets/icons/user.png'],
-    hour: 9,
-  },
-  {
-    title: 'Design review on PrimaVita p...',
-    time: '10 AM - 10:30 AM · 30 m',
-    type: '',
-    color: '#18181b',
-    borderColor: '#18181b',
-    textColor: '#fff',
-    labelColor: '#fff',
-    people: ['../assets/icons/user.png', '../assets/icons/user.png'],
-    hour: 10,
-  },
-  {
-    title: 'Prepare product presentation for PrimaVita Project',
-    time: '11 AM - 1 PM · 2 hr',
-    type: '',
-    color: '#fef9c3',
-    borderColor: '#fde047',
-    textColor: '#a16207',
-    labelColor: '#a16207',
-    people: ['../assets/icons/user.png', '../assets/icons/user.png', '../assets/icons/user.png'],
-    hour: 11,
-  },
-];
 
 type RootStackParamList = {
   Home: undefined;
@@ -75,11 +28,37 @@ const CalendarView: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(today.getDate());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [events, setEvents] = useState<any[]>([]);
+
+  // Fetch events from AsyncStorage
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const storedEvents = await AsyncStorage.getItem('userEvents');
+      if (storedEvents) {
+        setEvents(JSON.parse(storedEvents));
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  // Calculate the start of the week for the selected date
+  const selected = new Date(currentYear, currentMonth, selectedDate);
+  const startOfWeek = new Date(selected);
+  startOfWeek.setDate(selected.getDate() - selected.getDay());
 
   // Generate 7 days for the horizontal bar
   const week = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(currentYear, currentMonth, selectedDate - today.getDay() + i);
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
     return d;
+  });
+
+  // Get number of days in the current month
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  // Generate all days for the current month
+  const monthDays = Array.from({ length: daysInMonth }, (_, i) => {
+    return new Date(currentYear, currentMonth, i + 1);
   });
 
   return (
@@ -92,38 +71,81 @@ const CalendarView: React.FC = () => {
         </TouchableOpacity>
       </View>
       {/* Horizontal Date Bar */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalDateBar} contentContainerStyle={{paddingHorizontal: 8}}>
-        {week.map((date, i) => {
-          const isSelected = date.getDate() === selectedDate && date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.horizontalDateBar}
+        contentContainerStyle={{ paddingHorizontal: 8 }}
+      >
+        {monthDays.map((date, i) => {
+          const isSelected =
+            date.getDate() === selectedDate &&
+            date.getMonth() === currentMonth &&
+            date.getFullYear() === currentYear;
           return (
             <TouchableOpacity
               key={i}
               style={[styles.datePill, isSelected && styles.datePillSelected]}
-              onPress={() => setSelectedDate(date.getDate())}
+              onPress={() => {
+                setSelectedDate(date.getDate());
+                setCurrentMonth(date.getMonth());
+                setCurrentYear(date.getFullYear());
+              }}
             >
-              <Text style={[styles.datePillDay, isSelected && styles.datePillDaySelected]}>{weekDays[date.getDay()]}</Text>
-              <Text style={[styles.datePillNum, isSelected && styles.datePillNumSelected]}>{date.getDate()}</Text>
+              <View style={styles.datePillContent}>
+                <Text style={[styles.datePillDay, isSelected && styles.datePillDaySelected]}>
+                  {weekDays[date.getDay()]}
+                </Text>
+                <Text
+                  style={[
+                    styles.datePillNum,
+                    isSelected && styles.datePillNumSelected,
+                    { fontSize: 20, fontWeight: 'bold', marginTop: 4 },
+                  ]}
+                >
+                  {date.getDate()}
+                </Text>
+              </View>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
       {/* Timeline */}
       <ScrollView style={styles.timelineScroll} contentContainerStyle={{paddingBottom: 32}}>
-        {[8,9,10,11].map(hour => {
-          const event = events.find(e => e.hour === hour);
+        {Array.from({ length: 11 }, (_, i) => i + 8).map(hour => {
+          const event = events.find(e =>
+            e.day === selectedDate &&
+            e.month === currentMonth &&
+            e.year === currentYear &&
+            parseInt(e.time.split(':')[0]) === hour
+          );
           return (
             <View key={hour} style={styles.timelineRow}>
               <Text style={styles.timelineHour}>{hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour-12} PM`}</Text>
               {event ? (
-                <View style={[styles.eventCard, {backgroundColor: event.color, borderColor: event.borderColor}]}> 
-                  <Text style={[styles.eventTitle, {color: event.textColor}]}>{event.title}</Text>
+                <View style={[styles.eventCard, {backgroundColor: event.color}]}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
                   <View style={styles.eventMetaRow}>
-                    <Text style={[styles.eventTime, {color: event.labelColor}]}>{event.time}</Text>
-                    {event.type ? <Text style={[styles.eventType, {color: event.labelColor}]}>{event.type}</Text> : null}
+                    <Text style={styles.eventTime}>{event.time}</Text>
+                    {event.priority && event.priority !== 'None' && (
+                      <View style={{
+                        marginLeft: 8,
+                        backgroundColor: 
+                          event.priority === 'Top Priority' ? '#ef4444' :
+                          event.priority === 'Urgent' ? '#f59e42' :
+                          event.priority === 'Critical Event' ? '#6366f1' :
+                          '#e0e7ff',
+                        borderRadius: 8,
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
+                      }}>
+                        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>{event.priority}</Text>
+                      </View>
+                    )}
                   </View>
                   {event.people.length > 0 && (
                     <View style={styles.eventPeopleRow}>
-                      {event.people.map((p, i) => (
+                      {event.people.map((_: string, i: number) => (
                         <Image key={i} source={require('../assets/icons/user.png')} style={styles.eventPersonAvatar} />
                       ))}
                       {event.people.length > 3 && (
@@ -234,14 +256,21 @@ const styles = StyleSheet.create({
   datePill: {
     backgroundColor: '#f3f4f6',
     borderRadius: 18,
-    paddingVertical: 8,
+    paddingVertical: 15,
     paddingHorizontal: 14,
     alignItems: 'center',
+    justifyContent: 'center', // add this line
     marginHorizontal: 4,
     minWidth: 48,
   },
   datePillSelected: {
     backgroundColor: '#6366f1',
+  },
+  datePillContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '30%',
   },
   datePillDay: {
     color: '#64748b',
@@ -254,11 +283,17 @@ const styles = StyleSheet.create({
   datePillNum: {
     color: '#64748b',
     fontWeight: 'bold',
-    fontSize: 18,
-    marginTop: 2,
+    fontSize: 20, 
+    marginTop: 4,
+    textShadowColor: '#fff',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   datePillNumSelected: {
     color: '#fff',
+    textShadowColor: '#6366f1',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
   timelineScroll: {
     paddingHorizontal: 18,
