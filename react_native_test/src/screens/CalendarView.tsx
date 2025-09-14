@@ -4,6 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Navbar from '../components/Navbar'; // <-- Add this import
 
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -15,16 +16,8 @@ type RootStackParamList = {
   Calendar: undefined;
 };
 
-const tabData = [
-  { key: 'home', icon: require('../assets/icons/home.png'), label: 'Home' },
-  { key: 'calendar', icon: require('../assets/icons/schedule.png'), label: 'Calendar' },
-  { key: 'add', icon: '+', label: '' },
-  { key: 'profile', icon: require('../assets/icons/user.png'), label: 'Profile' },
-];
-
 const CalendarView: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [activeTab, setActiveTab] = useState('calendar');
   const [selectedDate, setSelectedDate] = useState(today.getDate());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -40,18 +33,6 @@ const CalendarView: React.FC = () => {
     };
     fetchEvents();
   }, []);
-
-  // Calculate the start of the week for the selected date
-  const selected = new Date(currentYear, currentMonth, selectedDate);
-  const startOfWeek = new Date(selected);
-  startOfWeek.setDate(selected.getDate() - selected.getDay());
-
-  // Generate 7 days for the horizontal bar
-  const week = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(startOfWeek);
-    d.setDate(startOfWeek.getDate() + i);
-    return d;
-  });
 
   // Get number of days in the current month
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -160,53 +141,7 @@ const CalendarView: React.FC = () => {
         })}
       </ScrollView>
       {/* Modern pill-shaped navbar at bottom */}
-      <View style={styles.pillNavbarBottom}>
-        <View style={styles.pillNavbar}>
-          {tabData.map((tab, idx) => (
-            <TouchableOpacity
-              key={tab.key}
-              style={[
-                styles.pillTab,
-                activeTab === tab.key && styles.pillTabActive,
-                tab.key === 'add' && styles.pillTabAdd
-              ]}
-              onPress={() => {
-                if (tab.key === 'add') {
-                  // No modal for calendar, do nothing
-                } else if (tab.key === 'profile') {
-                  navigation.navigate('Profile');
-                  setActiveTab(tab.key);
-                } else if (tab.key === 'calendar') {
-                  navigation.navigate('Calendar');
-                  setActiveTab(tab.key);
-                } else if (tab.key === 'home') {
-                  navigation.navigate('Home');
-                  setActiveTab(tab.key);
-                } else {
-                  setActiveTab(tab.key);
-                }
-              }}
-              activeOpacity={0.8}
-            >
-              {tab.key === 'add' ? (
-                <Text style={[styles.pillTabIcon, { color: '#fff' }]}>+</Text>
-              ) : (
-                <Image
-                  source={tab.icon}
-                  style={[
-                    styles.pillTabIcon,
-                    activeTab === tab.key ? styles.pillTabIconActive : { tintColor: '#2563eb' }
-                  ]}
-                  resizeMode="contain"
-                />
-              )}
-              {activeTab === tab.key && tab.key !== 'add' && (
-                <Text style={styles.pillTabLabel}>{tab.label}</Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      <Navbar activeTab="calendar" />
     </View>
   );
 };
@@ -259,7 +194,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 14,
     alignItems: 'center',
-    justifyContent: 'center', // add this line
+    justifyContent: 'center', 
     marginHorizontal: 4,
     minWidth: 48,
   },

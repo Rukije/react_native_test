@@ -4,6 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Navbar from '../components/Navbar';
 
 type RootStackParamList = {
   SignIn: undefined;
@@ -107,53 +108,7 @@ const ProfileScreen: React.FC = () => {
       </Modal>
 
       {/* Modern pill-shaped navbar at bottom */}
-      <View style={styles.pillNavbarBottom}>
-        <View style={styles.pillNavbar}>
-          {tabData.map((tab, idx) => (
-            <TouchableOpacity
-              key={tab.key}
-              style={[
-                styles.pillTab,
-                activeTab === tab.key && styles.pillTabActive,
-                tab.key === 'add' && styles.pillTabAdd
-              ]}
-              onPress={() => {
-                if (tab.key === 'add') {
-                  // No modal for profile, do nothing
-                } else if (tab.key === 'profile') {
-                  navigation.navigate('Profile');
-                  setActiveTab(tab.key);
-                } else if (tab.key === 'calendar') {
-                  navigation.navigate('Calendar');
-                  setActiveTab(tab.key);
-                } else if (tab.key === 'home') {
-                  navigation.navigate('Home');
-                  setActiveTab(tab.key);
-                } else {
-                  setActiveTab(tab.key);
-                }
-              }}
-              activeOpacity={0.8}
-            >
-              {tab.key === 'add' ? (
-                <Text style={[styles.pillTabIcon, { color: '#fff' }]}>+</Text>
-              ) : (
-                <Image
-                  source={tab.icon}
-                  style={[
-                    styles.pillTabIcon,
-                    activeTab === tab.key ? styles.pillTabIconActive : { tintColor: '#2563eb' }
-                  ]}
-                  resizeMode="contain"
-                />
-              )}
-              {activeTab === tab.key && tab.key !== 'add' && (
-                <Text style={styles.pillTabLabel}>{tab.label}</Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      <Navbar activeTab="profile" />
     </View>
   );
 };

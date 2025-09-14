@@ -30,8 +30,8 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         const currentUser = auth().currentUser;
         const userName = currentUser?.displayName || '';
         await AsyncStorage.setItem('biometricUser', email);
-        await AsyncStorage.setItem('userName', userName); // Save name for later use
-        navigation.navigate('Home', { userName }); // Pass name to Home screen
+        await AsyncStorage.setItem('userName', userName);
+        navigation.navigate('Home', { userName }); 
       } catch (e: any) {
         if (e.code === 'auth/user-not-found') {
           setError('No user found with this email.');
@@ -55,7 +55,7 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
     const rnBiometrics = new ReactNativeBiometrics();
     const { available, biometryType } = await rnBiometrics.isSensorAvailable();
-    console.log('Biometric available:', available, 'Type:', biometryType);
+    console.log('=== BIOMETRIC DEBUG ===', available, biometryType);
 
     if (!available) {
       setError('Biometric authentication not available on this device.');
@@ -72,6 +72,16 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       navigation.navigate('Home', { userName });
     } else {
       setError('Biometric authentication failed or cancelled.');
+    }
+  };
+
+  const handleFaceIdLogin = async () => {
+    const rnBiometrics = new ReactNativeBiometrics();
+    const { available, biometryType } = await rnBiometrics.isSensorAvailable();
+    console.log('Biometric available:', available, 'Type:', biometryType);
+
+    if (!available) {
+      return;
     }
   };
 
