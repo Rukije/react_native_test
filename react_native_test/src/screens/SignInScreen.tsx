@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ReactNativeBiometrics from 'react-native-biometrics';
 
 const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -25,6 +27,7 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (validate()) {
       try {
         await auth().signInWithEmailAndPassword(email, password);
+        await AsyncStorage.setItem('biometricUser', email);
         navigation.navigate('Home');
       } catch (e: any) {
         if (e.code === 'auth/user-not-found') {
@@ -40,57 +43,113 @@ const SignInScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
   };
 
+  const handleBiometricSignIn = async () => {
+    setError('');
+    const savedEmail = await AsyncStorage.getItem('biometricUser');
+    if (!savedEmail) {
+      setError('No previous biometric login found. Please login with email/password first.');
+      return;
+    }
+    const rnBiometrics = new ReactNativeBiometrics();
+    const { available, biometryType } = await rnBiometrics.isSensorAvailable();
+    console.log('Biometric available:', available, 'Type:', biometryType);
+
+    if (!available) {
+      setError('Biometric authentication not available on this device.');
+      return;
+    }
+
+    const { success } = await rnBiometrics.simplePrompt({
+      promptMessage: biometryType === 'FaceID' ? 'Sign in with FaceID' : 'Sign in with Biometrics',
+    });
+
+    if (success) {
+      navigation.navigate('Home');
+    } else {
+      setError('Biometric authentication failed or cancelled.');
+    }
+  };
+
+  const FaceIDButton = ({ onPress }: { onPress: () => void }) => (
+    <TouchableOpacity
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#bbb',
+        borderRadius: 8,
+        padding: 10,
+        backgroundColor: '#fff',
+        marginBottom: 16,
+        alignSelf: 'center',
+        width: 180,
+        justifyContent: 'center',
+      }}
+      onPress={onPress}
+    >
+      <Image
+        source={require('../assets/icons/face-id.png')}
+        style={{ width: 24, height: 24, marginRight: 8 }}
+        resizeMode="contain"
+      />
+      <Text style={{ fontSize: 16, color: '#333' }}>Face ID</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.creativeHeader}>
-        <LinearGradient colors={["#2563eb", "#60a5fa"]} style={styles.creativeGradient}>
-          <Text style={styles.loginHeader}>Login</Text>
-        </LinearGradient>
-      </View>
-      <View style={styles.content}>
-        <View style={styles.blobWrapper}>
-          <LinearGradient colors={["#60a5fa", "#2563eb"]} style={styles.blobBackground} />
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.creativeHeader}>
+          <LinearGradient colors={["#2563eb", "#60a5fa"]} style={styles.creativeGradient}>
+            <Text style={styles.loginHeader}>Login</Text>
+          </LinearGradient>
         </View>
-        <View style={styles.inputsContainer}>
-          <TextInput
-            style={[styles.input, { borderColor: '#c7d2fe', borderWidth: 2, color: '#2563eb' }]}
-            placeholder="Email"
-            placeholderTextColor="#93c5fd"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={[styles.input, { borderColor: '#c7d2fe', borderWidth: 2, color: '#2563eb' }]}
-            placeholder="Password"
-            placeholderTextColor="#93c5fd"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </View>
-        <View style={styles.row}>
-          <TouchableOpacity>
-            <Text style={styles.forgot}>Forgot Password?</Text>
+        <View style={styles.content}>
+          <View style={styles.blobWrapper}>
+            <LinearGradient colors={["#60a5fa", "#2563eb"]} style={styles.blobBackground} />
+          </View>
+          <View style={styles.inputsContainer}>
+            <TextInput
+              style={[styles.input, { borderColor: '#c7d2fe', borderWidth: 2, color: '#2563eb' }]}
+              placeholder="Email"
+              placeholderTextColor="#93c5fd"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={[styles.input, { borderColor: '#c7d2fe', borderWidth: 2, color: '#2563eb' }]}
+              placeholder="Password"
+              placeholderTextColor="#93c5fd"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity>
+              <Text style={styles.forgot}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <TouchableOpacity style={styles.loginBtn} onPress={handleSignIn}>
+            <Text style={styles.loginText}>Sign In</Text>
           </TouchableOpacity>
+          <FaceIDButton onPress={handleBiometricSignIn} />
+          <View style={styles.bottomRow}>
+            <Text style={styles.newHere}>New Here? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+              <Text style={styles.register}>Register</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        <TouchableOpacity style={styles.loginBtn} onPress={handleSignIn}>
-              <Text style={styles.loginText}>Sign In</Text>
-        </TouchableOpacity>
-        <View style={styles.bottomRow}>
-          <Text style={styles.newHere}>New Here? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-            <Text style={styles.register}>Register</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
-  const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f7f7fa', position: 'relative' },
   creativeHeader: {
     position: 'absolute',
